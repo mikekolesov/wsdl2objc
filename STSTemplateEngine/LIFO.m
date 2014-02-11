@@ -47,9 +47,6 @@
 	return self;
 } // end method
 
-// private method: deallocate instance
- // end method
-
 // ---------------------------------------------------------------------------
 // Class Method:  stackWithCapacity:
 // ---------------------------------------------------------------------------

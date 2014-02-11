@@ -24,7 +24,7 @@
 
 - (NSString *)stringByEscapingXML
 {
-	NSMutableString *escapedString = [[self mutableCopy] autorelease];
+	NSMutableString *escapedString = [self mutableCopy];
 	[escapedString replaceOccurrencesOfString:@"&" withString:@"&amp;" options:0 range:NSMakeRange(0, [escapedString length])];
 	[escapedString replaceOccurrencesOfString:@"\"" withString:@"&quot;" options:0 range:NSMakeRange(0, [escapedString length])];
 	[escapedString replaceOccurrencesOfString:@"'" withString:@"&apos;" options:0 range:NSMakeRange(0, [escapedString length])];
@@ -35,7 +35,7 @@
 
 - (NSString *)stringByUnescapingXML
 {
-	NSMutableString *unescapedString = [[self mutableCopy] autorelease];
+	NSMutableString *unescapedString = [self mutableCopy];
 	[unescapedString replaceOccurrencesOfString:@"&quot;" withString:@"\"" options:0 range:NSMakeRange(0, [unescapedString length])];
 	[unescapedString replaceOccurrencesOfString:@"&apos;" withString:@"'" options:0 range:NSMakeRange(0, [unescapedString length])];
 	[unescapedString replaceOccurrencesOfString:@"&lt;" withString:@"<" options:0 range:NSMakeRange(0, [unescapedString length])];
@@ -48,6 +48,20 @@
 {
 	return (xmlChar *)[[self stringByEscapingXML] UTF8String];
 }
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName
+{
+	return xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[self UTF8String]);
+}
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS
+{
+	xmlNodePtr node = xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[self UTF8String]);
+    xmlSetNsProp(node, nil, (const xmlChar*)"xmlns", (const xmlChar*)[elNS UTF8String]);
+	
+	return node;
+}
+
 
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix
 {
@@ -83,6 +97,19 @@
 
 @implementation NSNumber (USAdditions)
 
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName
+{
+	return xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self stringValue] UTF8String]);
+}
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS
+{
+	xmlNodePtr node = xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self stringValue] UTF8String]);
+    xmlSetNsProp(node, nil, (const xmlChar*)"xmlns", (const xmlChar*)[elNS UTF8String]);
+	
+	return node;
+}
+
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix
 {
 	NSString *nodeName = nil;
@@ -109,6 +136,19 @@
 @end
 
 @implementation NSDecimalNumber (USAdditions)
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName
+{
+	return xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self stringValue] UTF8String]);
+}
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS
+{
+	xmlNodePtr node = xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self stringValue] UTF8String]);
+    xmlSetNsProp(node, nil, (const xmlChar*)"xmlns", (const xmlChar*)[elNS UTF8String]);
+	
+	return node;
+}
 
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix
 {
@@ -143,6 +183,19 @@
 
 @implementation NSDate (USAdditions)
 
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName
+{
+	return xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self ISO8601DateString] UTF8String]);
+}
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS
+{
+	xmlNodePtr node = xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self ISO8601DateString] UTF8String]);
+    xmlSetNsProp(node, nil, (const xmlChar*)"xmlns", (const xmlChar*)[elNS UTF8String]);
+	
+	return node;
+}
+
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix
 {
 	NSString *nodeName = nil;
@@ -168,6 +221,19 @@
 @end
 
 @implementation NSData (USAdditions)
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName
+{
+	return xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self base64Encoding] UTF8String]);
+}
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS
+{
+	xmlNodePtr node = xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self base64Encoding] UTF8String]);
+    xmlSetNsProp(node, nil, (const xmlChar*)"xmlns", (const xmlChar*)[elNS UTF8String]);
+	
+	return node;
+}
 
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix
 {
@@ -303,7 +369,7 @@ static const char encodingTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq
 		else characters[length++] = '=';	
 	}
 	
-	return [[[NSString alloc] initWithBytesNoCopy:characters length:length encoding:NSASCIIStringEncoding freeWhenDone:YES] autorelease];
+	return [[NSString alloc] initWithBytesNoCopy:characters length:length encoding:NSASCIIStringEncoding freeWhenDone:YES];
 }
 
 @end
@@ -325,6 +391,19 @@ static const char encodingTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq
 - (NSString *)stringValue
 {
 	return value ? @"true" : @"false";
+}
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName
+{
+	return xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self stringValue] UTF8String]);
+}
+
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS
+{
+	xmlNodePtr node = xmlNewDocNode(doc, NULL, (const xmlChar*)[elName UTF8String], (const xmlChar*)[[self stringValue] UTF8String]);
+    xmlSetNsProp(node, nil, (const xmlChar*)"xmlns", (const xmlChar*)[elNS UTF8String]);
+	
+	return node;
 }
 
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix
@@ -349,9 +428,9 @@ static const char encodingTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq
 	NSString *stringValue = [NSString deserializeNode:cur];
 	
 	if([stringValue isEqualToString:@"true"]) {
-		return [[[USBoolean alloc] initWithBool:YES] autorelease];
+		return [[USBoolean alloc] initWithBool:YES];
 	} else if([stringValue isEqualToString:@"false"]) {
-		return [[[USBoolean alloc] initWithBool:NO] autorelease];
+		return [[USBoolean alloc] initWithBool:NO];
 	}
 	
 	return nil;
@@ -376,6 +455,66 @@ static const char encodingTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq
 
 @synthesize faultcode, faultstring, faultactor, detail;
 
++(SOAPFault *)deserializeNode:(xmlNodePtr)cur
+{
+	SOAPFault *soapFault = [SOAPFault new];
+	NSString *ns = [NSString stringWithCString:(char*)cur->ns->href encoding:NSUTF8StringEncoding];
+	if (! ns) return soapFault;
+	if ([ns isEqualToString:@"http://schemas.xmlsoap.org/soap/envelope/"]) {
+		// soap 1.1
+		for( cur = cur->children ; cur != NULL ; cur = cur->next ) {
+			if(cur->type == XML_ELEMENT_NODE) {
+				if(xmlStrEqual(cur->name, (const xmlChar *) "faultcode")) {
+					soapFault.faultcode = [NSString deserializeNode:cur];
+				}
+				if(xmlStrEqual(cur->name, (const xmlChar *) "faultstring")) {
+					soapFault.faultstring = [NSString deserializeNode:cur];
+				}
+				if(xmlStrEqual(cur->name, (const xmlChar *) "faultactor")) {
+					soapFault.faultactor = [NSString deserializeNode:cur];
+				}
+				if(xmlStrEqual(cur->name, (const xmlChar *) "detail")) {
+					soapFault.detail = [NSString deserializeNode:cur];
+				}
+			}
+		}
+	} else if ([ns isEqualToString:@"http://www.w3.org/2003/05/soap-envelope"]) {
+		// soap 1.2
+				
+		for( cur = cur->children ; cur != NULL ; cur = cur->next ) {
+			if(cur->type == XML_ELEMENT_NODE) {
+				if(xmlStrEqual(cur->name, (const xmlChar *) "Code")) {
+					xmlNodePtr newcur = cur;
+					for ( newcur = newcur->children; newcur != NULL ; newcur = newcur->next ) {
+						if(xmlStrEqual(newcur->name, (const xmlChar *) "Value")) {
+							soapFault.faultcode = [NSString deserializeNode:newcur];
+							break;
+						}
+					}
+					// TODO: Add Subcode handling
+				}
+				if(xmlStrEqual(cur->name, (const xmlChar *) "Reason")) {
+					xmlChar *theReason = xmlNodeGetContent(cur);
+					if (theReason != NULL) {
+						soapFault.faultstring = [NSString stringWithCString:(char*)theReason encoding:NSUTF8StringEncoding];
+						xmlFree(theReason);
+					}
+				}
+				if(xmlStrEqual(cur->name, (const xmlChar *) "Node")) {
+					soapFault.faultactor = [NSString deserializeNode:cur];
+				}
+				if(xmlStrEqual(cur->name, (const xmlChar *) "Detail")) {
+					soapFault.detail = [NSString deserializeNode:cur];
+				}
+				// TODO: Add "Role" ivar
+			}
+		}
+	}
+  
+	return soapFault;
+}
+
+
 + (id)deserializeFaultDetails:(xmlNodePtr)cur expectedExceptions:(NSDictionary *)exceptions
 {
     if (cur->children) {
@@ -399,7 +538,7 @@ static const char encodingTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq
 
 + (SOAPFault *)deserializeNode:(xmlNodePtr)cur expectedExceptions:(NSDictionary *)exceptions
 {
-	SOAPFault *soapFault = [[SOAPFault new] autorelease];
+	SOAPFault *soapFault = [SOAPFault new];
 	NSString *ns = [NSString stringWithCString:(char*)cur->ns->href encoding:NSUTF8StringEncoding];
 	if (! ns) return soapFault;
 	if ([ns isEqualToString:@"http://schemas.xmlsoap.org/soap/envelope/"]) {
@@ -465,15 +604,6 @@ static const char encodingTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopq
 		simpleString = [simpleString substringToIndex: suffixRange.location];
 
 	return simpleString;
-}
-
-- (void)dealloc
-{
-	[faultcode release];
-	[faultstring release];
-	[faultactor release];
-	[detail release];
-	[super dealloc];
 }
 
 @end
@@ -742,16 +872,16 @@ xmlXPathObjectPtr execute_xpath_expression(xmlDocPtr doc, const xmlChar* xpathEx
 
 + (id)managerWithUsername:(NSString *)usr andPassword:(NSString *)pwd
 {
-    return [[[BasicSSLCredentialsManager alloc]
-             initWithUsername:usr andPassword:pwd] autorelease];
+    return [[BasicSSLCredentialsManager alloc]
+             initWithUsername:usr andPassword:pwd];
 }
 
 - (id)initWithUsername:(NSString *)usr andPassword:(NSString *)pwd
 {
     self = [super init];
     if (self != nil) {
-        username = [usr retain];
-        password = [pwd retain];
+        username = usr;
+        password = pwd;
     }
     return self;
 }
@@ -790,10 +920,4 @@ xmlXPathObjectPtr execute_xpath_expression(xmlDocPtr doc, const xmlChar* xpathEx
     return NO;
 }
 
--(void)dealloc
-{
-    [username release];
-    [password release];
-    [super dealloc];
-}
 @end

@@ -80,39 +80,39 @@
 %FOREACH operation in operations
 - (%«className»Response *)%«operation.invokeString»
 {
-	return [self performSynchronousOperation:[[(%«className»_%«operation.className»*)[%«className»_%«operation.className» alloc] initWithBinding:self delegate:self
+	return [self performSynchronousOperation:[(%«className»_%«operation.className»*)[%«className»_%«operation.className» alloc] initWithBinding:self delegate:self
 %FOREACH part in operation.input.body.parts
 																							%«part.name»:a%«part.uname»
 %ENDFOR
 %FOREACH header in operation.input.headers
 																							%«header.name»:a%«header.uname»
 %ENDFOR
-																							] autorelease]];
+																							]];
 }
 
 - (void)%«operation.asyncInvokeString» delegate:(id<%«className»ResponseDelegate>)responseDelegate
 {
-	[self performAsynchronousOperation: [[(%«className»_%«operation.className»*)[%«className»_%«operation.className» alloc] initWithBinding:self delegate:responseDelegate
+	[self performAsynchronousOperation: [(%«className»_%«operation.className»*)[%«className»_%«operation.className» alloc] initWithBinding:self delegate:responseDelegate
 %FOREACH part in operation.input.body.parts
 																							 %«part.name»:a%«part.uname»
 %ENDFOR
 %FOREACH header in operation.input.headers
 																							 %«header.name»:a%«header.uname»
 %ENDFOR
-																							 ] autorelease]];
+																							 ]];
 }
 %ENDFOR
 
 - (void)sendHTTPCallUsingBody:(NSString *)outputBody soapAction:(NSString *)soapAction forOperation:(%«className»Operation *)operation
 {
-    if (!outputBody) {
-        NSError * err = [NSError errorWithDomain:@"%«className»NULLRequestExcpetion"
-                                            code:0
-                                        userInfo:nil];
-        
-        [operation connection:nil didFailWithError:err];
-        return;
-    }
+//    if (!outputBody) {
+//        NSError * err = [NSError errorWithDomain:@"%«className»NULLRequestError"
+//                                            code:0
+//                                        userInfo:nil];
+//        
+//        [operation connection:nil didFailWithError:err];
+//        return;
+//    }
 
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:self.address 
 																												 cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
@@ -142,17 +142,6 @@
 	NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:request delegate:operation];
 	
 	operation.urlConnection = connection;
-	[connection release];
-}
-
-- (void) dealloc
-{
-	[soapSigner release];
-	[sslManager release];
-	[address release];
-	[cookies release];
-	[customHeaders release];
-	[super dealloc];
 }
 
 @end
@@ -247,17 +236,6 @@
 	[delegate operation:self completedWithResponse:response];
 }
 
-- (void)dealloc
-{
-	[binding release];
-	[response release];
-	delegate = nil;
-	[responseData release];
-	[urlConnection release];
-	
-	[super dealloc];
-}
-
 @end
 
 %FOREACH operation in operations
@@ -290,25 +268,8 @@
 	return self;
 }
 
-- (void)dealloc
-{
-%FOREACH part in operation.input.body.parts
-%IFEQ part.element.type.assignOrRetain retain
-	if(%«part.name» != nil) [%«part.name» release];
-%ENDIF
-%ENDFOR
-%FOREACH header in operation.input.headers
-%IFEQ header.type.assignOrRetain retain
-	if(%«header.name» != nil) [%«header.name» release];
-%ENDIF
-%ENDFOR
-	
-	[super dealloc];
-}
-
 - (void)main
 {
-	[response autorelease];
 	response = [%«className»Response new];
 	
 	%«className»_envelope *envelope = [%«className»_envelope sharedInstance];
@@ -317,10 +278,10 @@
 %IFDEF operation.input.headers
 	headerElements = [NSMutableDictionary dictionary];
 %FOREACH header in operation.input.headers
-%IFEQ header.type.assignOrRetain retain
+%IFEQ header.type.assignOrStrong strong
 	if(%«header.name» != nil) [headerElements setObject:%«header.name» forKey:@"%«header.wsdlName»"];
 %ELSIFEQ header.type.typeName boolean
-	if(%«header.name» != nil) [headerElements setObject:[[[USBoolean alloc] initWithBool:*%«header.name»] autorelease] forKey:@"%«header.wsdlName»"];
+	if(%«header.name» != nil) [headerElements setObject:[[USBoolean alloc] initWithBool:*%«header.name»] forKey:@"%«header.wsdlName»"];
 %ELSIFEQ header.type.typeName byte
 	if(%«header.name» != nil) [headerElements setObject:[NSNumber numberWithChar:*%«header.name»] forKey:@"%«header.wsdlName»"];
 %ELSIFEQ header.type.typeName int
@@ -362,10 +323,10 @@
 	bodyKeys = [NSMutableArray array];
 	id obj = nil;
 %FOREACH part in operation.input.body.parts
-%IFEQ part.element.type.assignOrRetain retain
+%IFEQ part.element.type.assignOrStrong strong
 	if(%«part.name» != nil) obj = %«part.name»;
 %ELSIFEQ part.element.type.typeName boolean
-	if(%«part.name» != nil) obj = [[[USBoolean alloc] initWithBool:*%«part.name»] autorelease];
+	if(%«part.name» != nil) obj = [[USBoolean alloc] initWithBool:*%«part.name»];
 %ELSIFEQ part.element.type.typeName byte
 	if(%«part.name» != nil) obj = [NSNumber numberWithChar:*%«part.name»];
 %ELSIFEQ part.element.type.typeName int
@@ -419,7 +380,7 @@
 		xmlNodePtr cur;
 		
 		if (binding.logXMLInOut) {
-			NSLog(@"ResponseBody:\n%@", [[[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding] autorelease]);
+			NSLog(@"ResponseBody:\n%@", [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding]);
 		}
 		
 #if !TARGET_OS_IPHONE && (!defined(MAC_OS_X_VERSION_10_6) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6)
@@ -593,13 +554,6 @@ static %«className»_envelope *%«className»SharedEnvelopeInstance = nil;
 	}
 	
 	return self;
-}
-
-- (void)dealloc {
-	self.headers = nil;
-	self.bodyParts = nil;
-	self.error = nil;	
-	[super dealloc];
 }
 
 @end

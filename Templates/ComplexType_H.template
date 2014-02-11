@@ -53,12 +53,12 @@ NSString *_content;
 - (void)deserializeElementsFromNode:(xmlNodePtr)cur;
 
 %IFNDEF superClass
-@property (retain) SOAPSigner *soapSigner;
+@property (strong) SOAPSigner *soapSigner;
 %ENDIF
 
 %IFDEF IsAttributedString
 /* content */
-@property (nonatomic, retain) NSString *_content;
+@property (nonatomic, strong) NSString *_content;
 %ENDIF
 
 /* elements */
@@ -68,16 +68,16 @@ NSString *_content;
 - (void)add%«element.uname»:(%«element.type.classNameWithPtr»)toAdd;
 @property (nonatomic, readonly) NSMutableArray * %«element.name»;
 %ELSE
-@property (nonatomic, %«element.type.assignOrRetain») %«element.type.classNameWithPtr» %«element.name»;
+@property (nonatomic, %«element.type.assignOrStrong») %«element.type.classNameWithPtr» %«element.name»;
 %ENDIF
 %ENDFOR
 %ENDIF
 
 /* attributes */
 %IFDEF attributes
-- (NSDictionary *)attributes;
+- (NSDictionary *)the_type_attributes;
 %FOREACH attribute in attributes
-@property (nonatomic, %«attribute.type.assignOrRetain») %«attribute.type.classNameWithPtr» %«attribute.name»;
+@property (nonatomic, %«attribute.type.assignOrStrong») %«attribute.type.classNameWithPtr» %«attribute.name»;
 %ENDFOR
 %ENDIF
 

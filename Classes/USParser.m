@@ -223,7 +223,7 @@
 	NSLog(@"Dumping schema: %@", schema.fullName);
 	NSLog(@"TYPES:");
 	for (USType *aT in [schema types]) {
-		NSLog(@"	+ %@ (%@, %d, %d, %@", aT.typeName, aT, aT.hasBeenParsed, [aT.enumerationValues count], [aT assignOrRetain]);
+		NSLog(@"	+ %@ (%@, %d, %d, %@", aT.typeName, aT, aT.hasBeenParsed, [aT.enumerationValues count], [aT assignOrStrong]);
 		NSLog(@"		Attributes:");
 		for (USAttribute *aTA in [aT attributes]) {
 			NSLog(@"		- %@ (%@)", [aTA name], [[aTA type] typeName]);

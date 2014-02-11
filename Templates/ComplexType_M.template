@@ -39,31 +39,6 @@ _content = nil;
 	return self;
 }
 
-- (void)dealloc
-{
-%IFNDEF superClass
-	[soapSigner release];
-%ENDIF
-
-%IFDEF sequenceElements
-%FOREACH element in sequenceElements
-%IFEQ element.type.assignOrRetain retain
-	if(%«element.name» != nil) [%«element.name» release];
-%ENDIF
-%ENDFOR
-%ENDIF
-
-%IFDEF attributes
-%FOREACH attribute in attributes
-%IFEQ attribute.type.assignOrRetain retain
-	if(%«attribute.name» != nil) [%«attribute.name» release];
-%ENDIF
-%ENDFOR
-%ENDIF
-	
-	[super dealloc];
-}
-
 - (NSString *)nsPrefix
 {
 	return @"%«schema.prefix»";
@@ -113,7 +88,7 @@ _content = nil;
 %IFDEF attributes
 %FOREACH attribute in attributes
 	if(self.%«attribute.name» != 0) {
-%IFEQ attribute.type.assignOrRetain retain
+%IFEQ attribute.type.assignOrStrong strong
 		xmlSetProp(node, (const xmlChar*)"%«attribute.wsdlName»", [[self.%«attribute.name» description] xmlString]);
 %ELSIFEQ attribute.type.typeName boolean
 		xmlSetProp(node, (const xmlChar*)"%«attribute.wsdlName»", (*self.%«attribute.name» ? (const xmlChar*)"true" : (const xmlChar*)"false"));
@@ -153,7 +128,7 @@ _content = nil;
 %IFDEF sequenceElements
 %FOREACH element in sequenceElements
 	if(self.%«element.name» != 0) {
-%IFEQ element.type.assignOrRetain retain
+%IFEQ element.type.assignOrStrong strong
 
 %IF element.useAnArray
 		for(%«element.type.classNameWithPtr» child in self.%«element.name») {
@@ -213,7 +188,7 @@ _content = nil;
 
 - (void)add%«element.uname»:(%«element.type.classNameWithPtr»)toAdd
 {
-%IFEQ element.type.assignOrRetain assign
+%IFEQ element.type.assignOrStrong assign
 	[%«element.name» addObject:[NSNumber numberWithInt:(int)toAdd]];
 %ELSE
 	if(toAdd != nil) [%«element.name» addObject:toAdd];
@@ -233,18 +208,18 @@ _content = nil;
 /* attributes */
 %IFDEF attributes
 
-- (NSDictionary *)attributes
+- (NSDictionary *)the_type_attributes
 {
-	NSMutableDictionary *attributes = [NSMutableDictionary dictionary];
+	NSMutableDictionary *attributesMutableDictionary = [NSMutableDictionary dictionary];
 %FOREACH attribute in attributes
-%IFEQ attribute.type.assignOrRetain retain
-	[attributes setObject:self.%«attribute.name» forKey:@"%«attribute.wsdlName»"];
+%IFEQ attribute.type.assignOrStrong strong
+	[attributesMutableDictionary setObject:self.%«attribute.name» forKey:@"%«attribute.wsdlName»"];
 %ELSE
-	[attributes setObject:[NSNumber numberWithInt:(int)self.%«attribute.name»] forKey:@"%«attribute.wsdlName»"];
+	[attributesMutableDictionary setObject:[NSNumber numberWithInt:(int)self.%«attribute.name»] forKey:@"%«attribute.wsdlName»"];
 %ENDIF
 %ENDFOR
 	
-	return attributes;
+	return attributesMutableDictionary;
 }
 
 %FOREACH attribute in attributes
@@ -257,7 +232,7 @@ _content = nil;
 
 + (%«classNameWithPtr»)deserializeNode:(xmlNodePtr)cur
 {
-	%«className» *newObject = [[%«className» new] autorelease];
+	%«className» *newObject = [%«className» new];
 	
 %IFDEF IsAttributedString
 	// Set the string content
@@ -293,7 +268,7 @@ _content = nil;
 		attrString = [NSString stringWithCString:(char*)attrValue encoding:NSUTF8StringEncoding];
 
 %IFEQ attribute.type.typeName boolean
-		self.%«attribute.name» = [[[USBoolean alloc] initWithBool:([attrString boolValue] ? YES : NO)] autorelease];
+		self.%«attribute.name» = [[USBoolean alloc] initWithBool:([attrString boolValue] ? YES : NO)];
 %ELSIFEQ attribute.type.typeName byte
 		self.%«attribute.name» = [NSNumber numberWithChar:[attrString intValue]];
 %ELSIFEQ attribute.type.typeName int
@@ -389,7 +364,7 @@ _content = nil;
 			}
 %FOREACH element in sequenceElements
 			if(xmlStrEqual(cur->name, (const xmlChar *) "%«element.wsdlName»")) {
-%IFEQ element.type.assignOrRetain retain
+%IFEQ element.type.assignOrStrong strong
 				
 				Class elementClass = nil;
 				xmlChar *instanceType = xmlGetNsProp(cur, (const xmlChar *) "type", (const xmlChar *) "http://www.w3.org/2001/XMLSchema-instance");
@@ -472,43 +447,39 @@ _content = nil;
  * http://davedelong.com/blog/2009/04/13/aspect-oriented-programming-objective-c
  */
 - (id) initWithCoder:(NSCoder *)decoder {
-	if ([super respondsToSelector:@selector(initWithCoder:)] && ![self isKindOfClass:[super class]]) {
-		self = [super performSelector:@selector(initWithCoder:) withObject:decoder];
-	} else {
-		self = [super init];
-	}
-	if (self == nil) { return nil; }
+
+	self = [super init];
+
+	if (self == nil) return nil;
  
-	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-	unsigned int numIvars = 0;
-	Ivar * ivars = class_copyIvarList([self class], &numIvars);
-	for(int i = 0; i < numIvars; i++) {
-		Ivar thisIvar = ivars[i];
-		NSString * key = [NSString stringWithUTF8String:ivar_getName(thisIvar)];
-		id value = [decoder decodeObjectForKey:key];
-		if (value == nil) { value = [NSNumber numberWithFloat:0.0]; }
-		[self setValue:value forKey:key];
+	@autoreleasepool {
+		unsigned int numIvars = 0;
+		Ivar * ivars = class_copyIvarList([self class], &numIvars);
+		for(int i = 0; i < numIvars; i++) {
+			Ivar thisIvar = ivars[i];
+			NSString * ___key = [NSString stringWithUTF8String:ivar_getName(thisIvar)];
+			id ___value = [decoder decodeObjectForKey:___key];
+			if (___value == nil) { ___value = [NSNumber numberWithFloat:0.0]; }
+			[self setValue:___value forKey:___key];
+		}
+		if (numIvars > 0) { free(ivars); }
 	}
-	if (numIvars > 0) { free(ivars); }
-	[pool drain];
 	return self;
 }
 
 - (void) encodeWithCoder:(NSCoder *)encoder {
-	if ([super respondsToSelector:@selector(encodeWithCoder:)] && ![self isKindOfClass:[super class]]) {
-		[super performSelector:@selector(encodeWithCoder:) withObject:encoder];
+	
+	@autoreleasepool {
+		unsigned int numIvars = 0;
+		Ivar * ivars = class_copyIvarList([self class], &numIvars);
+		for (int i = 0; i < numIvars; i++) {
+			Ivar thisIvar = ivars[i];
+			NSString * ___key = [NSString stringWithUTF8String:ivar_getName(thisIvar)];
+			id ___value = [self valueForKey:___key];
+			[encoder encodeObject:___value forKey:___key];
+		}
+		if (numIvars > 0) { free(ivars); }
 	}
-	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-	unsigned int numIvars = 0;
-	Ivar * ivars = class_copyIvarList([self class], &numIvars);
-	for (int i = 0; i < numIvars; i++) {
-		Ivar thisIvar = ivars[i];
-		NSString * key = [NSString stringWithUTF8String:ivar_getName(thisIvar)];
-		id value = [self valueForKey:key];
-		[encoder encodeObject:value forKey:key];
-	}
-	if (numIvars > 0) { free(ivars); }
-	[pool drain];
 }
 
 @end

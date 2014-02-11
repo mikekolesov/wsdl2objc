@@ -64,7 +64,7 @@ typedef enum {
 - (NSString *)className;
 - (NSString *)classNameWithPtr;
 - (NSString *)classNameWithoutPtr;
-- (NSString *)assignOrRetain;
+- (NSString *)assignOrStrong;
 
 @property (nonatomic, copy) NSString *typeName;
 @property (nonatomic, weak) USSchema *schema;

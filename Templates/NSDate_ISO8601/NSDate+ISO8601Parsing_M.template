@@ -628,8 +628,6 @@ static BOOL is_leap_year(unsigned year) {
     
     *outRange = range;
   }
-  
-  [gregorian release];
 
   return date;
 }

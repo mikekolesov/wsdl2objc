@@ -20,12 +20,20 @@
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix;
 + (NSString *)deserializeNode:(xmlNodePtr)cur;
 
+// added for backward compability
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName;
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS;
+
 @end
 
 @interface NSNumber (USAdditions)
 
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix;
 + (NSNumber *)deserializeNode:(xmlNodePtr)cur;
+
+// added for backward compability
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName;
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS;
 
 @end
 
@@ -35,6 +43,10 @@
 + (NSDecimalNumber *)deserializeString:(NSString *)stringValue;
 + (NSDecimalNumber *)deserializeNode:(xmlNodePtr)cur;
 
+// added for backward compability
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName;
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS;
+
 @end
 
 @interface NSDate (USAdditions)
@@ -42,12 +54,20 @@
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix;
 + (NSDate *)deserializeNode:(xmlNodePtr)cur;
 
+// added for backward compability
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName;
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS;
+
 @end
 
 @interface NSData (USAdditions)
 
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix;
 + (NSData *)deserializeNode:(xmlNodePtr)cur;
+
+// added for backward compability
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName;
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS;
 
 @end
 
@@ -61,13 +81,17 @@
 	BOOL value;
 }
 
-@property (nonatomic) BOOL boolValue;
+@property (nonatomic, assign) BOOL boolValue;
 
 - (id)initWithBool:(BOOL)aValue;
 - (NSString *)stringValue;
 
 - (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNSPrefix:(NSString *)elNSPrefix;
 + (USBoolean *)deserializeNode:(xmlNodePtr)cur;
+
+// added for backward compability
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName;
+- (xmlNodePtr)xmlNodeForDoc:(xmlDocPtr)doc elementName:(NSString *)elName elementNS:(NSString *)elNS;
 
 @end
 
@@ -78,13 +102,16 @@
 	NSString *detail;
 }
 
-@property (nonatomic, retain) NSString *faultcode;
-@property (nonatomic, retain) NSString *faultstring;
-@property (nonatomic, retain) NSString *faultactor;
-@property (nonatomic, retain) id detail;
+@property (nonatomic, strong) NSString *faultcode;
+@property (nonatomic, strong) NSString *faultstring;
+@property (nonatomic, strong) NSString *faultactor;
+@property (nonatomic, strong) id detail;
 @property (readonly) NSString *simpleFaultString;
 
 + (SOAPFault *)deserializeNode:(xmlNodePtr)cur expectedExceptions:(NSDictionary *)exceptions;
+
+// added for backward compability
++ (SOAPFault *)deserializeNode:(xmlNodePtr)cur;
 
 @end
 
@@ -95,10 +122,10 @@
 @end
 
 @interface SOAPSigner : NSObject {
-    id<SOAPSignerDelegate> delegate;
+    __weak id <SOAPSignerDelegate> delegate;
 }
 
-@property (nonatomic, assign) id<SOAPSignerDelegate> delegate;
+@property (nonatomic, weak) id<SOAPSignerDelegate> delegate;
 
 - (id) initWithDelegate:(id<SOAPSignerDelegate>)del;
 - (NSString *)signRequest:(NSString *)req;

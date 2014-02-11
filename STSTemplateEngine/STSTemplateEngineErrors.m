@@ -49,9 +49,6 @@ const NSRange kZeroRange = { 0, 0 };
 	return self;
 } // end method
 
-// private method: deallocate instance
- // end method
-
 // ---------------------------------------------------------------------------
 // Class Method:  error:inLine:atToken:
 // ---------------------------------------------------------------------------

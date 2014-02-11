@@ -404,8 +404,6 @@ BOOL classExists (NSString *className) {
 	return self;
 } // end method
 
-// private method: deallocate instance
- // end method
 
 // public method: return new flags, allocated, initialised and autoreleased.
 // initial values: consumed is false, expand is true, condex is false.
